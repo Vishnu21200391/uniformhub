@@ -874,14 +874,42 @@ td strong{color:var(--navy);font-weight:600;}
 <div class="toast" id="toast"><span id="toastMsg">Done!</span></div>
 
 <script>
-// ═══ STATE ═══
-let ADMIN_EMAIL = 'admin@uniformhub.com';
-let ADMIN_PASS  = 'admin123';
-let users = [];       // registered customers
-let currentUser = null;
-let cart = [], selSizes = {}, selQtys = {}, activeSchool = '', promoApplied = false, currentCat = 'All';
+// ═══════════════════════════════════════════
+//  STORAGE HELPERS  — all data lives in
+//  localStorage so it survives page refresh
+// ═══════════════════════════════════════════
+const LS = {
+  get(k)    { try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v)  { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} },
+  del(k)    { try { localStorage.removeItem(k); } catch(e){} }
+};
 
-const SCHOOLS_DATA = [
+// ── Default admin credentials (first run only) ──
+const DEFAULT_ADMIN_EMAIL = 'admin@uniformhub.com';
+const DEFAULT_ADMIN_PASS  = 'admin123';
+
+// ── Load or initialise admin credentials ──
+let ADMIN_EMAIL = LS.get('uh_admin_email') || DEFAULT_ADMIN_EMAIL;
+let ADMIN_PASS  = LS.get('uh_admin_pass')  || DEFAULT_ADMIN_PASS;
+
+// ── Load or initialise users list ──
+let users = LS.get('uh_users') || [];
+
+// ── Session: currentUser (cleared on logout, not on refresh if "remember me") ──
+let currentUser = LS.get('uh_session') || null;
+
+// ── Cart persisted across refresh ──
+let cart = LS.get('uh_cart') || [];
+
+let selSizes = {}, selQtys = {}, activeSchool = '', promoApplied = false, currentCat = 'All';
+
+// ── Save helpers ──
+function saveUsers()   { LS.set('uh_users', users); }
+function saveCart()    { LS.set('uh_cart', cart); updateBadge(); }
+function saveSession() { LS.set('uh_session', currentUser); }
+function saveAdmin()   { LS.set('uh_admin_email', ADMIN_EMAIL); LS.set('uh_admin_pass', ADMIN_PASS); }
+
+const DEFAULT_SCHOOLS = [
   {name:'Delhi Public School',     city:'New Delhi', count:14},
   {name:"St. Mary's Convent",      city:'Mumbai',    count:10},
   {name:'Kendriya Vidyalaya',      city:'Bengaluru', count:12},
@@ -889,8 +917,10 @@ const SCHOOLS_DATA = [
   {name:'DAV Public School',       city:'Kolkata',   count:9},
   {name:'Amity International School',city:'Noida',   count:11},
 ];
+// Load from storage or use defaults
+const SCHOOLS_DATA = LS.get('uh_schools') || DEFAULT_SCHOOLS;
 
-let PRODUCTS = [
+const DEFAULT_PRODUCTS = [
   {id:1, name:'School Shirt',   cat:'Shirt',  emoji:'👔', price:500,  bulk:450,  sizes:['S','M','L','XL'],         stock:'in'},
   {id:2, name:'School Pant',    cat:'Pant',   emoji:'👖', price:700,  bulk:630,  sizes:['28','30','32','34'],       stock:'in'},
   {id:3, name:'School Blazer',  cat:'Blazer', emoji:'🧥', price:1500, bulk:1350, sizes:['S','M','L','XL'],         stock:'in'},
@@ -902,8 +932,9 @@ let PRODUCTS = [
   {id:9, name:'House Tie',      cat:'Tie',    emoji:'🔴', price:180,  bulk:160,  sizes:['One Size'],               stock:'in'},
   {id:10,name:'PE Shorts',      cat:'Skirt',  emoji:'🩲', price:300,  bulk:270,  sizes:['S','M','L','XL'],         stock:'low'},
 ];
+let PRODUCTS = LS.get('uh_products') || DEFAULT_PRODUCTS;
 
-let ORDERS = [
+const DEFAULT_ORDERS = [
   {id:'#UH-291847', customer:'Amit Sharma',  school:'Delhi Public School',    amount:1700, date:'28 May 2026', status:'Delivered'},
   {id:'#UH-291846', customer:'Priya Nair',   school:"St. Mary's Convent",     amount:1900, date:'27 May 2026', status:'Shipped'},
   {id:'#UH-291845', customer:'Rajan Mehta',  school:'Kendriya Vidyalaya',     amount:2600, date:'26 May 2026', status:'Processing'},
@@ -911,6 +942,7 @@ let ORDERS = [
   {id:'#UH-291843', customer:'Vikram Das',   school:'DAV Public School',      amount:2800, date:'24 May 2026', status:'Shipped'},
   {id:'#UH-291842', customer:'Meena Iyer',   school:'Amity International',    amount:3200, date:'23 May 2026', status:'Processing'},
 ];
+let ORDERS = LS.get('uh_orders') || DEFAULT_ORDERS;
 
 const fmtRs = n => 'Rs.' + Number(n).toLocaleString('en-IN');
 const tagClass = s => s==='Delivered'?'green':s==='Shipped'?'blue':s==='Processing'?'yellow':'red';
@@ -930,19 +962,24 @@ function doLogin() {
   const pass  = document.getElementById('li-pass').value.trim();
   const err   = document.getElementById('loginErr');
   err.classList.remove('show');
-  // Compare both lowercased to avoid case mismatch
   if (email === ADMIN_EMAIL.toLowerCase() && pass === ADMIN_PASS) {
     currentUser = {name:'Admin', email:ADMIN_EMAIL, role:'admin'};
+    saveSession();
     launchApp(); return;
   }
   const u = users.find(x => x.email.toLowerCase() === email && x.pass === pass);
-  if (u) { currentUser = {...u}; launchApp(); return; }
+  if (u) {
+    currentUser = {...u};
+    saveSession();
+    launchApp(); return;
+  }
   err.textContent = 'Invalid email or password. Please try again.';
   err.classList.add('show');
 }
 
 function guestLogin() {
   currentUser = {name:'Guest', email:'guest', role:'customer'};
+  saveSession();
   launchApp();
 }
 
@@ -955,9 +992,11 @@ function doRegister() {
   if (pass.length < 6)          { err.textContent='Password must be at least 6 characters.'; err.classList.add('show'); return; }
   if (email === ADMIN_EMAIL)     { err.textContent='This email is already in use.'; err.classList.add('show'); return; }
   if (users.find(x => x.email === email)) { err.textContent='This email is already registered.'; err.classList.add('show'); return; }
-  const u = {name, email, pass, role:'customer', joined:'30 May 2026', orders:0};
+  const u = {name, email, pass, role:'customer', joined: new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}), orders:0};
   users.push(u);
+  saveUsers();
   currentUser = {...u};
+  saveSession();
   launchApp();
 }
 
@@ -973,11 +1012,30 @@ function launchApp() {
   initSchoolGrid();
   PRODUCTS.forEach(p => { selSizes[p.id]=p.sizes[0]; selQtys[p.id]=1; });
   renderProducts(PRODUCTS);
+  updateBadge();
   toast('Welcome, ' + currentUser.name + '! 👋');
+}
+
+// ── Auto-login on page load if session saved ──
+function checkAutoLogin() {
+  // Reload admin creds from storage (in case changed)
+  ADMIN_EMAIL = LS.get('uh_admin_email') || DEFAULT_ADMIN_EMAIL;
+  ADMIN_PASS  = LS.get('uh_admin_pass')  || DEFAULT_ADMIN_PASS;
+  users       = LS.get('uh_users')       || [];
+  cart        = LS.get('uh_cart')        || [];
+  const sess  = LS.get('uh_session');
+  if (sess) {
+    currentUser = sess;
+    // Refresh admin creds in session if admin
+    if (sess.role === 'admin') currentUser.email = ADMIN_EMAIL;
+    launchApp();
+  }
 }
 
 function doLogout() {
   currentUser = null; cart = []; promoApplied = false;
+  LS.del('uh_session');
+  LS.del('uh_cart');
   document.getElementById('cartBadge').textContent = '0';
   document.getElementById('loginOverlay').classList.remove('hidden');
   document.getElementById('li-email').value = '';
@@ -1080,7 +1138,7 @@ function addToCart(pid) {
   const ex   = cart.find(c=>c.key===key);
   if (ex) ex.qty+=qty;
   else cart.push({key,pid,name:p.name,size,qty,price:p.price,emoji:p.emoji});
-  updateBadge();
+  saveCart();
   toast(`${p.name} (${size}) added to cart! 🛒`);
 }
 
@@ -1134,8 +1192,8 @@ function renderCart() {
   calcSummary();
 }
 
-function removeItem(key) { cart=cart.filter(c=>c.key!==key); updateBadge(); renderCart(); }
-function clearCart()     { cart=[]; updateBadge(); renderCart(); }
+function removeItem(key) { cart=cart.filter(c=>c.key!==key); saveCart(); renderCart(); }
+function clearCart()     { cart=[]; saveCart(); renderCart(); }
 
 function calcSummary() {
   const sub   = cart.reduce((a,c)=>a+(c.price*c.qty),0);
@@ -1196,10 +1254,11 @@ function placeOrder() {
   ORDERS.unshift({id:oid, customer:currentUser?.name||'Guest', school:activeSchool||'N/A', amount:amt, date:'30 May 2026', status:'Processing'});
   if (currentUser && currentUser.role==='customer') {
     const u = users.find(x=>x.email===currentUser.email);
-    if (u) u.orders = (u.orders||0)+1;
+    if (u) { u.orders = (u.orders||0)+1; saveUsers(); }
   }
+  LS.set('uh_orders', ORDERS);
   document.getElementById('successId').textContent = oid;
-  cart=[]; promoApplied=false; updateBadge();
+  cart=[]; promoApplied=false; saveCart();
   nav('success');
 }
 
@@ -1260,7 +1319,7 @@ function filterOrders(f,el) {
 
 function changeStatus(oid,status) {
   const o = ORDERS.find(x=>x.id===oid);
-  if (o) { o.status=status; renderOrdersTable(); renderDashOrders(); toast('Order '+oid+' updated to '+status); }
+  if (o) { o.status=status; LS.set('uh_orders',ORDERS); renderOrdersTable(); renderDashOrders(); toast('Order '+oid+' updated to '+status); }
 }
 
 function renderProdsTable() {
@@ -1320,12 +1379,14 @@ function renderUsersTable() {
 function toggleStock(pid) {
   const p = PRODUCTS.find(x=>x.id===pid);
   p.stock = p.stock==='in'?'low':'in';
+  LS.set('uh_products', PRODUCTS);
   renderProdsTable(); toast('Stock updated for '+p.name);
 }
 
 function deleteProduct(pid) {
   if (!confirm('Delete this product?')) return;
   PRODUCTS = PRODUCTS.filter(x=>x.id!==pid);
+  LS.set('uh_products', PRODUCTS);
   renderProdsTable(); toast('Product deleted.');
 }
 
@@ -1368,6 +1429,7 @@ function addProduct() {
   const imgSrc = document.getElementById('imgPreview').src || '';
   const hasImg = imgSrc && imgSrc.startsWith('data:');
   PRODUCTS.push({id:Date.now(),name,cat,emoji:emojis[cat]||'📦',price,bulk,sizes:sizes.length?sizes:['S','M','L','XL'],stock,img:hasImg?imgSrc:null});
+  LS.set('uh_products', PRODUCTS);
   ['ap-name','ap-price','ap-bulk','ap-sizes'].forEach(id=>document.getElementById(id).value='');
   removeImg();
   toast('Product "'+name+'" added to catalog! ✅');
@@ -1385,6 +1447,7 @@ function addSchoolPrompt() {
       const s=document.getElementById(id);
       if(s){const o=document.createElement('option');o.textContent=name;s.appendChild(o);}
     });
+    LS.set('uh_schools', SCHOOLS_DATA);
     renderSchoolsTable();
     initSchoolGrid();
     toast('School "'+name+'" added! 🏫');
@@ -1428,7 +1491,8 @@ function changeAdminEmail() {
   if (pass !== ADMIN_PASS)             { showMsg('emailMsg','Incorrect password.',false); return; }
   if (!newEmail.includes('@'))         { showMsg('emailMsg','Please enter a valid email address.',false); return; }
   ADMIN_EMAIL = newEmail;
-  if (currentUser) currentUser.email = newEmail;
+  if (currentUser) { currentUser.email = newEmail; saveSession(); }
+  saveAdmin();
   const disp = document.getElementById('adminEmailDisplay');
   if (disp) disp.textContent = newEmail;
   document.getElementById('s-cur-email').value = '';
@@ -1447,6 +1511,7 @@ function changeAdminPass() {
   if (newPass.length < 6)               { showMsg('passMsg','New password must be at least 6 characters.',false); return; }
   if (newPass !== confPass)             { showMsg('passMsg','New passwords do not match.',false); return; }
   ADMIN_PASS = newPass;
+  saveAdmin();
   document.getElementById('s-cur-pass').value = '';
   document.getElementById('s-new-pass').value = '';
   document.getElementById('s-conf-pass').value = '';
@@ -1454,6 +1519,9 @@ function changeAdminPass() {
   toast('Admin password updated! 🔑');
 }
 
+
+// ── Run auto-login check on page load ──
+window.addEventListener("DOMContentLoaded", checkAutoLogin);
 </script>
 </body>
 </html>
