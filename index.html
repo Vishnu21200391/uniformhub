@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>UniformHub — School Uniform Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1a2340;--navy-dark:#0f1629;--navy-mid:#243060;--gold:#e8a020;--gold-light:#f5c96a;--gold-pale:#fef3dc;--cream:#fdf8f0;--g50:#f8f7f4;--g100:#eeece7;--g200:#d8d6d0;--g300:#c5c3bb;--g400:#9e9c95;--g500:#7a7872;--g600:#5a5852;--g700:#3e3d38;--green:#2d6a4f;--green-light:#d8f3dc;--green-pale:#f0faf2;--red:#c1121f;--red-light:#ffeaea;--blue:#1565c0;--blue-light:#e3f0ff;--sh:0 2px 12px rgba(26,35,64,.09);--shlg:0 8px 40px rgba(26,35,64,.15);}
+*{margin:0;padding:0;box-sizing:border-box;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--navy);min-height:100vh;}
+
+/* ═══ LOGIN ═══ */
+#loginOverlay{position:fixed;inset:0;background:linear-gradient(135deg,#0f1629 0%,#1a2340 50%,#1e3a8a 100%);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;}
+#loginOverlay.hidden{display:none;}
+.ls{display:grid;grid-template-columns:1fr 1fr;max-width:880px;width:100%;border-radius:24px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);}
+.ll{background:linear-gradient(160deg,#1a2340 0%,#243a80 60%,#1a4a8a 100%);padding:52px 44px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;}
+.ll::before{content:'';position:absolute;top:-80px;right:-80px;width:260px;height:260px;border-radius:50%;background:rgba(232,160,32,.07);}
+.ll::after{content:'';position:absolute;bottom:-60px;left:-60px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.04);}
+.lbrand{display:flex;align-items:center;gap:12px;margin-bottom:44px;position:relative;z-index:1;}
+.lbbox{width:50px;height:50px;background:var(--gold);border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:26px;font-weight:700;color:var(--navy);}
+.lbname{color:#fff;font-family:'Playfair Display',serif;font-size:24px;font-weight:700;}
+.lbtag{font-size:10px;color:var(--gold-light);letter-spacing:2px;text-transform:uppercase;}
+.ll h2{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;color:#fff;line-height:1.2;margin-bottom:14px;position:relative;z-index:1;}
+.ll h2 em{color:var(--gold);font-style:normal;}
+.ll>p{font-size:14px;color:rgba(255,255,255,.55);line-height:1.7;position:relative;z-index:1;}
+.lfeats{margin-top:32px;display:flex;flex-direction:column;gap:11px;position:relative;z-index:1;}
+.lfi{display:flex;align-items:center;gap:10px;font-size:13px;color:rgba(255,255,255,.65);}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;}
+.lr{background:#fff;padding:52px 44px;display:flex;flex-direction:column;justify-content:center;}
+.lr h3{font-family:'Playfair Display',serif;font-size:28px;color:var(--navy);margin-bottom:6px;}
+.lr .lsub{font-size:13px;color:var(--g500);margin-bottom:28px;}
+.ltabs{display:flex;background:var(--g50);border-radius:10px;padding:4px;margin-bottom:26px;border:1px solid var(--g100);}
+.ltab{flex:1;height:36px;border:none;border-radius:7px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;background:none;color:var(--g500);}
+.ltab.act{background:#fff;color:var(--navy);box-shadow:0 1px 6px rgba(26,35,64,.12);}
+.lform{display:none;}.lform.act{display:block;}
+.lfg{display:flex;flex-direction:column;gap:6px;margin-bottom:15px;}
+.lfg label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--g500);}
+.lfg input{height:44px;border:1.5px solid var(--g100);border-radius:10px;padding:0 14px;font-family:inherit;font-size:14px;color:var(--navy);background:var(--g50);outline:none;transition:border .2s;}
+.lfg input:focus{border-color:var(--gold);background:#fff;}
+.lbtn{width:100%;height:48px;border:none;border-radius:10px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.3px;margin-top:4px;}
+.lbtn.dark{background:var(--navy);color:#fff;}.lbtn.dark:hover{background:var(--navy-mid);}
+.lbtn.amber{background:var(--gold);color:var(--navy);margin-top:8px;}.lbtn.amber:hover{background:var(--gold-light);}
+.lerr{font-size:12px;color:var(--red);font-weight:600;padding:8px 12px;background:var(--red-light);border-radius:8px;margin-bottom:14px;display:none;}
+.lerr.show{display:block;}
+
+
+
+/* ═══ HEADER ═══ */
+header{background:var(--navy);position:sticky;top:0;z-index:200;border-bottom:3px solid var(--gold);}
+.hdr{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;align-items:center;gap:16px;height:66px;}
+.logo{display:flex;align-items:center;gap:10px;cursor:pointer;}
+.lbox{width:40px;height:40px;background:var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--navy);}
+.lname{color:#fff;font-family:'Playfair Display',serif;font-size:21px;font-weight:600;line-height:1.1;}
+.ltag2{font-size:9px;color:var(--gold-light);letter-spacing:2.5px;text-transform:uppercase;}
+.hsearch{flex:1;max-width:380px;position:relative;}
+.hsearch input{width:100%;height:38px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:9px;padding:0 14px 0 38px;color:#fff;font-size:13px;font-family:inherit;outline:none;transition:border .2s;}
+.hsearch input:focus{border-color:var(--gold);}
+.hsearch input::placeholder{color:rgba(255,255,255,.38);}
+.hsic{position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.45;}
+.hright{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.upill{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:9px;padding:6px 14px;font-size:13px;color:#fff;font-weight:500;}
+.uavatar{width:24px;height:24px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--navy);}
+.cartpill{background:var(--gold);border:none;border-radius:9px;padding:7px 18px;font-family:inherit;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s;}
+.cartpill:hover{background:var(--gold-light);}
+.cbadge{background:var(--navy);color:var(--gold);border-radius:50%;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
+.logoutbtn{background:none;border:1px solid rgba(255,255,255,.22);border-radius:7px;padding:5px 12px;font-family:inherit;font-size:12px;color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s;}
+.logoutbtn:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+/* ═══ NAV ═══ */
+.topnav{background:var(--navy-dark);border-bottom:1px solid rgba(255,255,255,.06);}
+.topnav-inner{max-width:1280px;margin:0 auto;padding:0 24px;display:flex;}
+.tnav{padding:10px 18px;font-size:13px;font-weight:500;color:rgba(255,255,255,.45);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:inherit;transition:all .2s;}
+.tnav:hover{color:rgba(255,255,255,.8);}
+.tnav.act{color:var(--gold);border-color:var(--gold);}
+
+/* ═══ PAGES ═══ */
+.page{display:none;}.page.act{display:block;}
+.wrap{max-width:1280px;margin:0 auto;padding:32px 24px;}
+
+/* ═══ BUTTONS ═══ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:10px;font-family:inherit;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-navy{background:var(--navy);color:#fff;padding:0 24px;height:46px;font-size:14px;}.btn-navy:hover{background:var(--navy-mid);}
+.btn-gold{background:var(--gold);color:var(--navy);padding:0 24px;height:46px;font-size:14px;}.btn-gold:hover{background:var(--gold-light);}
+.btn-out{background:#fff;color:var(--navy);border:1.5px solid var(--g200);padding:0 20px;height:40px;font-size:13px;}.btn-out:hover{border-color:var(--navy);}
+.btn-sm{height:36px;padding:0 16px;font-size:13px;}
+.btn-full{width:100%;}
+.btn-red{background:var(--red-light);color:var(--red);border:none;border-radius:8px;padding:4px 10px;font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;}
+.img-upload-box{width:100%;height:160px;border:2px dashed var(--g200);border-radius:12px;cursor:pointer;overflow:hidden;position:relative;background:var(--g50);transition:border .2s,background .2s;display:flex;align-items:center;justify-content:center;}
+.img-upload-box:hover{border-color:var(--gold);background:var(--gold-pale);}
+.img-upload-inner{text-align:center;pointer-events:none;}
+
+/* ═══ HOME ═══ */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#243a80 100%);padding:72px 24px 60px;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(232,160,32,.07),transparent 50%),radial-gradient(circle at 80% 20%,rgba(255,255,255,.04),transparent 40%);}
+.hero-in{position:relative;max-width:680px;margin:0 auto;}
+.hbadge{display:inline-flex;align-items:center;gap:6px;background:rgba(232,160,32,.15);border:1px solid rgba(232,160,32,.3);color:var(--gold-light);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;letter-spacing:.5px;margin-bottom:20px;}
+.hero h1{font-family:'Playfair Display',serif;font-size:50px;font-weight:700;color:#fff;line-height:1.08;margin-bottom:18px;}
+.hero h1 em{color:var(--gold);font-style:normal;}
+.hero p{font-size:16px;color:rgba(255,255,255,.6);margin-bottom:36px;line-height:1.65;}
+.scard{background:#fff;border-radius:18px;padding:28px 32px;text-align:left;box-shadow:var(--shlg);}
+.slabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.8px;color:var(--g500);margin-bottom:10px;}
+.srow{display:flex;gap:10px;}
+.sselect{flex:1;height:48px;border:1.5px solid var(--g100);border-radius:10px;padding:0 16px;font-family:inherit;font-size:14px;font-weight:500;color:var(--navy);background:var(--g50);outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;transition:border .2s;}
+.sselect:focus{border-color:var(--gold);}
+.feats{background:#fff;border-bottom:1px solid var(--g100);padding:18px 24px;}
+.feats-in{max-width:1280px;margin:0 auto;display:flex;justify-content:center;flex-wrap:wrap;}
+.feat{display:flex;align-items:center;gap:10px;padding:8px 20px;font-size:13px;color:var(--g700);font-weight:500;border-right:1px solid var(--g100);}
+.feat:last-child{border-right:none;}
+.fic{width:30px;height:30px;border-radius:7px;background:var(--gold-pale);display:flex;align-items:center;justify-content:center;font-size:15px;}
+.sec-hd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;}
+.sec-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:600;}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;margin-bottom:48px;}
+.sc{background:#fff;border-radius:18px;padding:22px 18px;border:1.5px solid var(--g100);text-align:center;cursor:pointer;transition:all .22s;}
+.sc:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:var(--sh);}
+.sc-ic{font-size:40px;margin-bottom:12px;}
+.sc-name{font-weight:600;font-size:14px;margin-bottom:3px;line-height:1.3;}
+.sc-cnt{font-size:12px;color:var(--g500);}
+.sc-city{font-size:11px;color:var(--g400);margin-top:2px;}
+
+/* ═══ SHOP ═══ */
+.shopbanner{background:var(--navy);padding:18px 24px;}
+.sb-in{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.sbname{font-family:'Playfair Display',serif;font-size:20px;color:#fff;}
+.sbname span{color:var(--gold);}
+.ghostbtn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.8);border-radius:8px;padding:6px 14px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .2s;}
+.ghostbtn:hover{background:rgba(255,255,255,.2);color:#fff;}
+.fbar{background:#fff;border-bottom:1px solid var(--g100);padding:13px 24px;}
+.fbar-in{max-width:1280px;margin:0 auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.flbl{font-size:12px;color:var(--g500);font-weight:600;margin-right:4px;text-transform:uppercase;letter-spacing:.8px;}
+.chip{padding:6px 16px;border-radius:20px;border:1.5px solid var(--g100);background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:var(--g600);cursor:pointer;transition:all .18s;}
+.chip.act,.chip:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+.sortsel{margin-left:auto;height:32px;border:1.5px solid var(--g100);border-radius:8px;padding:0 12px;font-family:inherit;font-size:12px;color:var(--g700);background:#fff;outline:none;cursor:pointer;}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px;margin-top:24px;}
+.pc{background:#fff;border-radius:18px;overflow:hidden;border:1px solid var(--g100);transition:transform .2s,box-shadow .2s;box-shadow:var(--sh);}
+.pc:hover{transform:translateY(-4px);box-shadow:var(--shlg);}
+.pcimg{height:200px;display:flex;align-items:center;justify-content:center;font-size:72px;position:relative;background:linear-gradient(135deg,var(--g50),var(--g100));}
+.pcbadge{position:absolute;top:10px;right:10px;padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;}
+.pcbadge.in{background:var(--green-light);color:var(--green);}
+.pcbadge.low{background:#fff8e1;color:#9a6a00;}
+.pcbody{padding:16px;}
+.pcname{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;margin-bottom:2px;}
+.pcschool{font-size:11px;color:var(--g500);margin-bottom:10px;}
+.pcprice{font-size:22px;font-weight:700;color:var(--navy);margin-bottom:12px;}
+.pcpu{font-size:12px;color:var(--g500);font-weight:400;margin-left:2px;}
+.pcbulk{font-size:11px;color:var(--green);font-weight:600;background:var(--green-pale);padding:2px 8px;border-radius:5px;margin-left:6px;}
+.sizes{display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap;}
+.sz{width:34px;height:34px;border-radius:8px;border:1.5px solid var(--g100);background:#fff;font-family:inherit;font-size:11px;font-weight:700;color:var(--g700);cursor:pointer;transition:all .15s;}
+.sz.act,.sz:hover{background:var(--navy);color:#fff;border-color:var(--navy);}
+.qadd{display:flex;gap:8px;align-items:center;}
+.qctrl{display:flex;align-items:center;border:1.5px solid var(--g100);border-radius:9px;overflow:hidden;}
+.qbtn{width:32px;height:36px;background:var(--g50);border:none;font-size:17px;font-weight:600;cursor:pointer;color:var(--navy);font-family:inherit;transition:background .15s;}
+.qbtn:hover{background:var(--g100);}
+.qval{width:30px;text-align:center;font-size:13px;font-weight:700;color:var(--navy);border:none;border-left:1.5px solid var(--g100);border-right:1.5px solid var(--g100);background:#fff;height:36px;font-family:inherit;}
+.addbtn{flex:1;height:36px;background:var(--gold);border:none;border-radius:9px;font-family:inherit;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer;transition:all .2s;}
+.addbtn:hover{background:var(--gold-light);}
+
+/* ═══ CART ═══ */
+.clayout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;}
+.box{background:#fff;border-radius:18px;border:1px solid var(--g100);}
+.bxhd{padding:18px 22px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;}
+.bxhd h2{font-family:'Playfair Display',serif;font-size:19px;}
+.lnkred{background:none;border:none;font-family:inherit;font-size:13px;color:var(--red);cursor:pointer;font-weight:500;}
+.ci{display:flex;gap:14px;padding:18px 22px;border-bottom:1px solid var(--g100);align-items:center;}
+.ci:last-child{border-bottom:none;}
+.ciimg{width:60px;height:60px;border-radius:10px;background:var(--g50);display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;}
+.ciinfo{flex:1;}
+.ciname{font-weight:600;font-size:14px;margin-bottom:3px;}
+.cimeta{font-size:12px;color:var(--g500);}
+.ciright{text-align:right;flex-shrink:0;}
+.ciprice{font-weight:700;font-size:16px;margin-bottom:6px;}
+.cirem{background:none;border:none;cursor:pointer;font-size:12px;color:var(--g400);font-family:inherit;text-decoration:underline;}
+.emptybox{padding:56px 22px;text-align:center;}
+.emptyic{font-size:52px;margin-bottom:16px;}
+.emptybox p{font-size:15px;color:var(--g500);margin-bottom:20px;}
+.sumbox{position:sticky;top:82px;padding:22px;}
+.sumrow{display:flex;justify-content:space-between;font-size:13px;margin-bottom:9px;color:var(--g700);}
+.sumrow.tot{border-top:2px solid var(--navy);padding-top:13px;margin-top:13px;font-size:16px;font-weight:700;color:var(--navy);}
+.sumnote{font-size:11px;color:var(--green);font-weight:600;padding:7px 12px;background:var(--green-pale);border-radius:8px;margin:12px 0 18px;text-align:center;}
+.promorow{display:flex;gap:8px;margin:12px 0;}
+.promoinp{flex:1;height:38px;border:1.5px solid var(--g100);border-radius:8px;padding:0 12px;font-family:inherit;font-size:13px;outline:none;}
+.promoinp:focus{border-color:var(--gold);}
+.promobtn{height:38px;padding:0 14px;background:var(--g50);border:1.5px solid var(--g100);border-radius:8px;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;color:var(--g700);}
+.promobtn:hover{background:var(--g100);}
+
+/* ═══ CHECKOUT ═══ */
+.colayout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start;}
+.fcard{background:#fff;border-radius:18px;border:1px solid var(--g100);margin-bottom:18px;}
+.fchd{padding:16px 22px;border-bottom:1px solid var(--g100);display:flex;align-items:center;gap:12px;}
+.stepdot{width:26px;height:26px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.fchd h3{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;}
+.fcbody{padding:22px;}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.frow.full{grid-template-columns:1fr;}
+.fg2{display:flex;flex-direction:column;gap:5px;}
+.fg2 label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g500);}
+.fg2 input,.fg2 textarea,.fg2 select{height:42px;border:1.5px solid var(--g100);border-radius:9px;padding:0 13px;font-family:inherit;font-size:13px;color:var(--navy);background:var(--g50);outline:none;transition:border .2s;width:100%;}
+.fg2 input:focus,.fg2 select:focus{border-color:var(--gold);background:#fff;}
+.fg2 textarea{height:78px;padding:10px 13px;resize:none;}
+.payopts{display:flex;flex-direction:column;gap:9px;}
+.payopt{border:1.5px solid var(--g100);border-radius:10px;padding:13px 16px;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:13px;}
+.payopt.sel{border-color:var(--navy);background:rgba(26,35,64,.03);}
+.payradio{width:17px;height:17px;border-radius:50%;border:2px solid var(--g300);flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.payopt.sel .payradio{border-color:var(--navy);}
+.rdot{width:7px;height:7px;border-radius:50%;background:var(--navy);display:none;}
+.payopt.sel .rdot{display:block;}
+.paylbl{font-weight:600;font-size:13px;}
+.paysub{font-size:11px;color:var(--g500);}
+.payem{font-size:22px;margin-left:auto;}
+.placebtn{width:100%;height:52px;background:var(--gold);border:none;border-radius:12px;color:var(--navy);font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:6px;}
+.placebtn:hover{background:var(--gold-light);}
+
+/* ═══ SUCCESS ═══ */
+.succwrap{max-width:520px;margin:64px auto;}
+.succcard{background:#fff;border-radius:24px;border:1px solid var(--g100);padding:56px 44px;text-align:center;box-shadow:var(--sh);}
+.succring{width:80px;height:80px;border-radius:50%;background:var(--green-light);margin:0 auto 22px;display:flex;align-items:center;justify-content:center;font-size:40px;}
+.succcard h2{font-family:'Playfair Display',serif;font-size:30px;margin-bottom:10px;}
+.succcard p{font-size:14px;color:var(--g600);line-height:1.65;margin-bottom:6px;}
+.ordercode{display:inline-block;background:var(--g50);border:1.5px solid var(--g100);padding:8px 24px;border-radius:9px;font-weight:700;font-size:18px;color:var(--navy);margin:16px 0 20px;}
+.delchip{display:inline-flex;align-items:center;gap:6px;background:var(--blue-light);color:var(--blue);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:28px;}
+
+/* ═══ ADMIN ═══ */
+.atopbar{background:var(--navy);padding:16px 24px;border-bottom:2px solid var(--gold);}
+.atb-in{max-width:1280px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;}
+.atitle{color:#fff;font-family:'Playfair Display',serif;font-size:20px;}
+.atitle span{color:var(--gold);}
+.alayout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 134px);}
+.aside{background:#fff;border-right:1px solid var(--g100);padding:20px 0;}
+.anavitem{padding:12px 24px;font-size:13px;font-weight:500;cursor:pointer;border-left:3px solid transparent;transition:all .2s;display:flex;align-items:center;gap:10px;color:var(--g700);}
+.anavitem.act{background:var(--gold-pale);border-color:var(--gold);color:var(--navy);font-weight:700;}
+.anavitem:hover:not(.act){background:var(--g50);}
+.abody{background:var(--g50);padding:28px;}
+.asec{display:none;}.asec.act{display:block;}
+.statsgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px;}
+.statcard{background:#fff;border-radius:12px;border:1px solid var(--g100);padding:20px;}
+.statlbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--g500);margin-bottom:8px;}
+.statval{font-size:30px;font-weight:700;color:var(--navy);font-family:'Playfair Display',serif;}
+.statchange{font-size:11px;color:var(--green);font-weight:600;margin-top:4px;}
+.dtable{background:#fff;border-radius:18px;border:1px solid var(--g100);overflow:hidden;margin-bottom:20px;}
+.dthd{padding:16px 20px;border-bottom:1px solid var(--g100);display:flex;align-items:center;justify-content:space-between;}
+.dthd h3{font-family:'Playfair Display',serif;font-size:17px;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:12px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--g500);background:var(--g50);border-bottom:1px solid var(--g100);}
+tbody tr{border-bottom:1px solid var(--g100);transition:background .15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--g50);}
+td{padding:13px 16px;font-size:13px;color:var(--g700);}
+td strong{color:var(--navy);font-weight:600;}
+.tag{display:inline-block;padding:3px 10px;border-radius:5px;font-size:11px;font-weight:700;}
+.tag.green{background:var(--green-light);color:var(--green);}
+.tag.yellow{background:#fff8e1;color:#9a6a00;}
+.tag.blue{background:var(--blue-light);color:var(--blue);}
+.tag.red{background:var(--red-light);color:var(--red);}
+.addform{background:#fff;border-radius:18px;border:1px solid var(--g100);padding:24px;margin-bottom:20px;}
+.addform h3{font-family:'Playfair Display',serif;font-size:17px;margin-bottom:18px;}
+.phd{margin-bottom:24px;}
+.phd h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;margin-bottom:4px;}
+.phd p{font-size:13px;color:var(--g500);}
+
+/* ═══ TOAST ═══ */
+.toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:var(--navy);color:#fff;border-radius:12px;padding:13px 18px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;box-shadow:var(--shlg);transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);max-width:300px;border:1px solid rgba(232,160,32,.3);}
+.toast.show{transform:translateY(0);opacity:1;}
+
+
+
+/* ══════════════════════════════════════
+   RESPONSIVE / MOBILE STYLES
+══════════════════════════════════════ */
+
+/* Tablet — 960px */
+@media(max-width:960px){
+  /* Cart & Checkout */
+  .clayout,.colayout{grid-template-columns:1fr;}
+  .sumbox{position:static;}
+
+  /* Admin */
+  .alayout{grid-template-columns:1fr;}
+  .aside{display:flex;flex-wrap:wrap;gap:6px;padding:12px;border-right:none;border-bottom:1px solid var(--g100);}
+  .anavitem{border-left:none !important;border-radius:10px;padding:8px 14px;font-size:12px;flex-shrink:0;}
+  .anavitem.act{background:var(--gold-pale);color:var(--navy);}
+  .abody{padding:16px;}
+  .statsgrid{grid-template-columns:repeat(2,1fr);}
+}
+
+/* Mobile — 640px */
+@media(max-width:640px){
+
+  /* ── Login ── */
+  .ls{grid-template-columns:1fr;min-height:auto;border-radius:20px;}
+  .ll{display:none;}
+  .lr{padding:32px 24px;border-radius:20px;}
+  .lr h3{font-size:22px;}
+  .ltab{font-size:12px;}
+
+  /* ── Header ── */
+  .hdr{padding:0 14px;gap:10px;height:58px;}
+  .lname{font-size:17px;}
+  .ltag2{display:none;}
+  .hsearch{display:none;}
+  .upill{padding:5px 10px;font-size:12px;gap:6px;}
+  .uavatar{width:22px;height:22px;font-size:10px;}
+  .cartpill{padding:6px 12px;font-size:12px;}
+  .cbadge{width:18px;height:18px;font-size:10px;}
+  .logoutbtn{display:none;}
+
+  /* ── Nav tabs ── */
+  .topnav-inner{overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;padding:0 8px;}
+  .topnav-inner::-webkit-scrollbar{display:none;}
+  .tnav{padding:10px 12px;font-size:12px;white-space:nowrap;flex-shrink:0;}
+
+  /* ── Hero ── */
+  .hero{padding:40px 16px 36px;}
+  .hero h1{font-size:28px;line-height:1.15;}
+  .hero p{font-size:14px;}
+  .hbadge{font-size:11px;padding:4px 12px;}
+  .scard{padding:20px 18px;}
+  .slabel{font-size:10px;}
+  .srow{flex-direction:column;gap:10px;}
+  .srow .btn-navy{width:100%;height:46px;}
+  .sselect{height:46px;font-size:14px;}
+
+  /* ── Features strip ── */
+  .feats-in{justify-content:flex-start;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;padding:0 4px;scrollbar-width:none;}
+  .feats-in::-webkit-scrollbar{display:none;}
+  .feat{padding:6px 14px;font-size:12px;white-space:nowrap;flex-shrink:0;}
+  .feat:last-child{border-right:1px solid var(--g100);}
+
+  /* ── School grid ── */
+  .sgrid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .sc{padding:16px 12px;}
+  .sc-ic{font-size:32px;margin-bottom:8px;}
+  .sc-name{font-size:13px;}
+
+  /* ── Shop banner ── */
+  .shopbanner{padding:14px 16px;}
+  .sbname{font-size:16px;}
+  .ghostbtn{font-size:11px;padding:5px 12px;}
+
+  /* ── Filter bar ── */
+  .fbar{padding:10px 14px;}
+  .fbar-in{gap:6px;overflow-x:auto;flex-wrap:nowrap;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:4px;}
+  .fbar-in::-webkit-scrollbar{display:none;}
+  .chip{white-space:nowrap;flex-shrink:0;padding:5px 14px;font-size:11px;}
+  .flbl{display:none;}
+  .sortsel{flex-shrink:0;font-size:11px;height:30px;}
+
+  /* ── Product grid ── */
+  .pgrid{grid-template-columns:repeat(2,1fr);gap:12px;margin-top:16px;}
+  .pcimg{height:150px;font-size:54px;}
+  .pcbody{padding:12px;}
+  .pcname{font-size:14px;}
+  .pcschool{font-size:10px;margin-bottom:8px;}
+  .pcprice{font-size:18px;margin-bottom:10px;}
+  .pcpu{font-size:11px;}
+  .pcbulk{font-size:10px;}
+  .sz{width:30px;height:30px;font-size:10px;border-radius:6px;}
+  .qbtn{width:28px;height:32px;font-size:15px;}
+  .qval{width:26px;height:32px;font-size:12px;}
+  .addbtn{height:32px;font-size:12px;}
+
+  /* ── Cart ── */
+  .wrap{padding:20px 14px;}
+  .phd h1{font-size:22px;}
+  .clayout{gap:16px;}
+  .bxhd{padding:14px 16px;}
+  .bxhd h2{font-size:16px;}
+  .ci{padding:14px 16px;gap:12px;}
+  .ciimg{width:50px;height:50px;font-size:24px;}
+  .ciname{font-size:13px;}
+  .cimeta{font-size:11px;}
+  .ciprice{font-size:14px;}
+  .sumbox{padding:16px;}
+  .promorow{gap:6px;}
+  .promoinp{font-size:12px;height:36px;}
+  .promobtn{height:36px;font-size:11px;padding:0 10px;}
+  .sumrow{font-size:12px;}
+  .sumrow.tot{font-size:14px;}
+  .sumnote{font-size:11px;}
+
+  /* ── Checkout ── */
+  .colayout{gap:16px;}
+  .fchd{padding:14px 16px;}
+  .fchd h3{font-size:14px;}
+  .fcbody{padding:16px;}
+  .frow{grid-template-columns:1fr;gap:12px;margin-bottom:12px;}
+  .fg2 input,.fg2 select,.fg2 textarea{height:42px;font-size:13px;}
+  .payopt{padding:11px 14px;gap:10px;}
+  .paylbl{font-size:12px;}
+  .paysub{font-size:10px;}
+  .payem{font-size:18px;}
+  .placebtn{height:48px;font-size:15px;}
+  .stepdot{width:22px;height:22px;font-size:11px;}
+
+  /* ── Success ── */
+  .succwrap{margin:32px auto;}
+  .succcard{padding:36px 24px;}
+  .succcard h2{font-size:24px;}
+  .succring{width:68px;height:68px;font-size:34px;}
+  .ordercode{font-size:15px;padding:7px 18px;}
+
+  /* ── Admin ── */
+  .atopbar{padding:12px 14px;}
+  .atitle{font-size:16px;}
+  .atb-in span{display:none;}
+  .aside{padding:10px;gap:6px;}
+  .anavitem{padding:7px 12px;font-size:11px;border-radius:8px;}
+  .abody{padding:14px;}
+  .statsgrid{grid-template-columns:repeat(2,1fr);gap:10px;}
+  .statcard{padding:14px;}
+  .statval{font-size:22px;}
+  .statlbl{font-size:10px;}
+  .statchange{font-size:10px;}
+  .dtable{overflow-x:auto;}
+  table{min-width:500px;}
+  .dthd{padding:12px 14px;}
+  .dthd h3{font-size:15px;}
+  thead th{padding:10px 12px;font-size:10px;}
+  td{padding:11px 12px;font-size:12px;}
+  .addform{padding:16px;}
+  .addform h3{font-size:15px;margin-bottom:14px;}
+  .phd h1{font-size:22px;}
+
+  /* ── Sections / Wrap ── */
+  .sec-title{font-size:20px;}
+  .sec-hd{margin-bottom:14px;}
+
+  /* ── Buttons ── */
+  .btn-navy,.btn-gold{height:42px;font-size:13px;padding:0 18px;}
+  .btn-out{height:36px;font-size:12px;padding:0 14px;}
+  .btn-sm{height:32px;font-size:12px;padding:0 12px;}
+  .btn-full{width:100%;}
+
+  /* ── Toast ── */
+  .toast{bottom:16px;right:16px;left:16px;max-width:none;font-size:13px;padding:12px 16px;}
+
+  /* ── Image upload ── */
+  .img-upload-box{height:130px;}
+}
+
+/* Extra small — 380px */
+@media(max-width:380px){
+  .hero h1{font-size:24px;}
+  .pgrid{grid-template-columns:1fr;}
+  .sgrid{grid-template-columns:1fr;}
+  .statsgrid{grid-template-columns:1fr;}
+  .hdr{height:54px;}
+  .lname{font-size:16px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ LOGIN OVERLAY ══════════ -->
+<div id="loginOverlay">
+  <div class="ls">
+    <div class="ll">
+      <div class="lbrand">
+        <div class="lbbox">U</div>
+        <div><div class="lbname">UniformHub</div><div class="lbtag">School Wear</div></div>
+      </div>
+      <h2>Order School<br>Uniforms <em>Online</em></h2>
+      <p>India's trusted platform for school uniform ordering — fast delivery, bulk pricing, and school-approved designs.</p>
+      <div class="lfeats">
+        <div class="lfi"><div class="ldot"></div>6 major schools available</div>
+        <div class="lfi"><div class="ldot"></div>Free delivery above Rs.2,000</div>
+        <div class="lfi"><div class="ldot"></div>UPI, Card &amp; Cash on Delivery</div>
+        <div class="lfi"><div class="ldot"></div>7-day easy returns</div>
+        <div class="lfi"><div class="ldot"></div>Bulk wholesale pricing</div>
+      </div>
+    </div>
+    <div class="lr">
+      <h3>Welcome Back</h3>
+      <div class="lsub">Sign in to your account or create a new one</div>
+      <div class="ltabs">
+        <button class="ltab act" onclick="swTab('login',this)">Sign In</button>
+        <button class="ltab" onclick="swTab('register',this)">Register</button>
+      </div>
+      <!-- SIGN IN -->
+      <div class="lform act" id="lf-login">
+        <div class="lerr" id="loginErr">Invalid email or password. Please try again.</div>
+        <div class="lfg"><label>Email Address</label><input type="email" id="li-email" placeholder="you@email.com"></div>
+        <div class="lfg"><label>Password</label><input type="password" id="li-pass" placeholder="Enter your password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+        <button class="lbtn dark" onclick="doLogin()">Sign In</button>
+        <button class="lbtn amber" onclick="guestLogin()">Continue as Guest</button>
+      </div>
+      <!-- REGISTER -->
+      <div class="lform" id="lf-register">
+        <div class="lerr" id="regErr">Please fill in all fields.</div>
+        <div class="lfg"><label>Full Name</label><input type="text" id="reg-name" placeholder="Rahul Sharma"></div>
+        <div class="lfg"><label>Email Address</label><input type="email" id="reg-email" placeholder="you@email.com"></div>
+        <div class="lfg"><label>Password (min 6 chars)</label><input type="password" id="reg-pass" placeholder="Create a password" onkeydown="if(event.key==='Enter')doRegister()"></div>
+        <button class="lbtn dark" onclick="doRegister()">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<header>
+  <div class="hdr">
+    <div class="logo" onclick="nav('home')">
+      <div class="lbox">U</div>
+      <div><div class="lname">UniformHub</div><div class="ltag2">School Wear</div></div>
+    </div>
+    <div class="hsearch">
+      <svg class="hsic" width="14" height="14" fill="none" stroke="white" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search uniforms or schools..." oninput="doSearch(this.value)">
+    </div>
+    <div class="hright">
+      <div class="upill"><div class="uavatar" id="uAvatar">?</div><span id="uLabel">User</span></div>
+      <button class="logoutbtn" onclick="doLogout()">Logout</button>
+      <button class="cartpill" onclick="nav('cart')">🛒 Cart <span class="cbadge" id="cartBadge">0</span></button>
+    </div>
+  </div>
+</header>
+<nav class="topnav">
+  <div class="topnav-inner">
+    <button class="tnav act" id="tab-home" onclick="nav('home')">🏠 Home</button>
+    <button class="tnav" id="tab-shop" onclick="nav('shop')">👕 Shop</button>
+    <button class="tnav" id="tab-cart" onclick="nav('cart')">🛒 Cart</button>
+    <button class="tnav" id="tab-checkout" onclick="nav('checkout')">💳 Checkout</button>
+    <button class="tnav" id="tab-admin" style="display:none;" onclick="nav('admin')">⚙ Admin</button>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="page-home" class="page act">
+  <div class="hero">
+    <div class="hero-in">
+      <div class="hbadge">✦ Trusted by 500+ Schools Across India</div>
+      <h1>School Uniforms<br>Delivered <em>Right to Your Door</em></h1>
+      <p>Select your school, pick your sizes, and order quality uniforms with fast delivery and easy returns.</p>
+      <div class="scard">
+        <div class="slabel">Select your school to get started</div>
+        <div class="srow">
+          <select class="sselect" id="homeSchool">
+            <option value="">-- Choose a School --</option>
+            <option>Delhi Public School</option>
+            <option>St. Mary's Convent</option>
+            <option>Kendriya Vidyalaya</option>
+            <option>Ryan International School</option>
+            <option>DAV Public School</option>
+            <option>Amity International School</option>
+          </select>
+          <button class="btn btn-navy" onclick="goShop()">Browse Uniforms →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="feats">
+    <div class="feats-in">
+      <div class="feat"><div class="fic">🚚</div>Free delivery above Rs.2,000</div>
+      <div class="feat"><div class="fic">↩️</div>7-day easy returns</div>
+      <div class="feat"><div class="fic">💳</div>UPI, Card &amp; COD</div>
+      <div class="feat"><div class="fic">📦</div>Bulk pricing available</div>
+      <div class="feat"><div class="fic">✅</div>School-approved designs</div>
+      <div class="feat"><div class="fic">🛡️</div>Secure checkout</div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="sec-hd">
+      <div class="sec-title">Browse by School</div>
+      <button class="btn btn-out btn-sm" onclick="nav('shop')">View All →</button>
+    </div>
+    <div class="sgrid" id="schoolGrid"></div>
+  </div>
+</div>
+
+<!-- SHOP -->
+<div id="page-shop" class="page">
+  <div class="shopbanner">
+    <div class="sb-in">
+      <div class="sbname">Uniforms for: <span id="shopSchoolName">All Schools</span></div>
+      <button class="ghostbtn" onclick="nav('home')">← Change School</button>
+    </div>
+  </div>
+  <div class="fbar">
+    <div class="fbar-in">
+      <span class="flbl">Filter:</span>
+      <button class="chip act" onclick="filterP('All',this)">All Items</button>
+      <button class="chip" onclick="filterP('Shirt',this)">Shirts</button>
+      <button class="chip" onclick="filterP('Pant',this)">Pants</button>
+      <button class="chip" onclick="filterP('Blazer',this)">Blazers</button>
+      <button class="chip" onclick="filterP('Tie',this)">Ties</button>
+      <button class="chip" onclick="filterP('Skirt',this)">Skirts</button>
+      <select class="sortsel" onchange="sortP(this.value)">
+        <option value="">Sort: Default</option>
+        <option value="low">Price: Low → High</option>
+        <option value="high">Price: High → Low</option>
+        <option value="name">Name: A–Z</option>
+      </select>
+    </div>
+  </div>
+  <div class="wrap"><div class="pgrid" id="prodGrid"></div></div>
+</div>
+
+<!-- CART -->
+<div id="page-cart" class="page">
+  <div class="wrap">
+    <div class="phd"><h1>Your Cart</h1><p id="cartSub">0 items in cart</p></div>
+    <div class="clayout">
+      <div class="box">
+        <div class="bxhd"><h2>Order Items</h2><button class="lnkred" onclick="clearCart()">Remove all</button></div>
+        <div id="cartList"></div>
+      </div>
+      <div class="box sumbox">
+        <div style="font-family:'Playfair Display',serif;font-size:18px;margin-bottom:18px;">Order Summary</div>
+        <div class="promorow">
+          <input class="promoinp" id="promoInp" placeholder="Promo code — try SCHOOL10">
+          <button class="promobtn" onclick="applyPromo()">Apply</button>
+        </div>
+        <div id="promoMsg" style="font-size:11px;margin-bottom:8px;"></div>
+        <div class="sumrow"><span>Subtotal</span><span id="s-sub">Rs.0</span></div>
+        <div class="sumrow"><span>Delivery</span><span id="s-del">Rs.80</span></div>
+        <div class="sumrow" style="color:var(--green)"><span>Promo Discount</span><span id="s-promo">Rs.0</span></div>
+        <div class="sumrow tot"><span>Total</span><span id="s-total">Rs.80</span></div>
+        <div class="sumnote" id="sumNote" style="display:none"></div>
+        <button class="btn btn-gold btn-full" style="height:50px;font-size:15px;margin-top:12px;" onclick="nav('checkout')">Proceed to Checkout →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT -->
+<div id="page-checkout" class="page">
+  <div class="wrap">
+    <div class="phd"><h1>Checkout</h1><p>Complete your delivery and payment details below</p></div>
+    <div class="colayout">
+      <div>
+        <div class="fcard">
+          <div class="fchd"><div class="stepdot">1</div><h3>Delivery Details</h3></div>
+          <div class="fcbody">
+            <div class="frow">
+              <div class="fg2"><label>First Name *</label><input id="f-fname" placeholder="Rahul" type="text"></div>
+              <div class="fg2"><label>Last Name *</label><input id="f-lname" placeholder="Sharma" type="text"></div>
+            </div>
+            <div class="frow">
+              <div class="fg2"><label>Phone *</label><input id="f-phone" placeholder="+91 98765 43210" type="tel"></div>
+              <div class="fg2"><label>Email</label><input id="f-email" placeholder="rahul@email.com" type="email"></div>
+            </div>
+            <div class="frow full">
+              <div class="fg2"><label>Street Address *</label><textarea id="f-addr" placeholder="House/Flat No., Street Name, Area..."></textarea></div>
+            </div>
+            <div class="frow">
+              <div class="fg2"><label>City *</label><input id="f-city" placeholder="New Delhi" type="text"></div>
+              <div class="fg2"><label>State</label>
+                <select id="f-state"><option>Delhi</option><option>Maharashtra</option><option>Karnataka</option><option>Tamil Nadu</option><option>Uttar Pradesh</option><option>West Bengal</option><option>Rajasthan</option><option>Gujarat</option><option>Punjab</option></select>
+              </div>
+            </div>
+            <div class="frow">
+              <div class="fg2"><label>PIN Code *</label><input id="f-pin" placeholder="110001" type="text" maxlength="6"></div>
+              <div class="fg2"><label>Landmark (optional)</label><input id="f-land" placeholder="Near Metro Station"></div>
+            </div>
+          </div>
+        </div>
+        <div class="fcard">
+          <div class="fchd"><div class="stepdot">2</div><h3>Payment Method</h3></div>
+          <div class="fcbody">
+            <div class="payopts">
+              <div class="payopt sel" onclick="selPay(this)"><div class="payradio"><div class="rdot"></div></div><div><div class="paylbl">UPI Payment</div><div class="paysub">PhonePe, Google Pay, Paytm, BHIM</div></div><div class="payem">📱</div></div>
+              <div class="payopt" onclick="selPay(this)"><div class="payradio"><div class="rdot"></div></div><div><div class="paylbl">Debit / Credit Card</div><div class="paysub">Visa, Mastercard, RuPay, Amex</div></div><div class="payem">💳</div></div>
+              <div class="payopt" onclick="selPay(this)"><div class="payradio"><div class="rdot"></div></div><div><div class="paylbl">Net Banking</div><div class="paysub">All major Indian banks</div></div><div class="payem">🏦</div></div>
+              <div class="payopt" onclick="selPay(this)"><div class="payradio"><div class="rdot"></div></div><div><div class="paylbl">Cash on Delivery</div><div class="paysub">Pay when your order arrives</div></div><div class="payem">💵</div></div>
+            </div>
+          </div>
+        </div>
+        <button class="placebtn" onclick="placeOrder()">🔒 Place Order Securely</button>
+      </div>
+      <div>
+        <div class="box" style="padding:22px;position:sticky;top:82px;">
+          <div style="font-family:'Playfair Display',serif;font-size:17px;margin-bottom:16px;">Your Order</div>
+          <div id="coItems" style="margin-bottom:14px;border-bottom:1px solid var(--g100);padding-bottom:14px;font-size:12px;"></div>
+          <div class="sumrow"><span>Subtotal</span><span id="co-sub">Rs.0</span></div>
+          <div class="sumrow"><span>Delivery</span><span id="co-del">Rs.80</span></div>
+          <div class="sumrow tot"><span>Total</span><span id="co-tot">Rs.80</span></div>
+          <div style="margin-top:14px;padding:10px 14px;background:var(--g50);border-radius:9px;font-size:11px;color:var(--g600);">🔒 100% secure &amp; encrypted payment</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div id="page-success" class="page">
+  <div class="wrap">
+    <div class="succwrap">
+      <div class="succcard">
+        <div class="succring">✅</div>
+        <h2>Order Confirmed!</h2>
+        <p>Thank you! Your uniform order has been placed successfully.</p>
+        <div class="ordercode" id="successId">#UH-000000</div>
+        <div class="delchip">📦 Expected delivery in 3–5 business days</div>
+        <p style="font-size:12px;color:var(--g400);margin-bottom:28px;">A confirmation SMS will be sent to your registered mobile number.</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-gold" onclick="nav('home')">Continue Shopping</button>
+          <button class="btn btn-out" onclick="nav('home')">Go to Home</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="page-admin" class="page">
+  <div class="atopbar">
+    <div class="atb-in">
+      <div class="atitle">Admin Panel — <span>UniformHub</span></div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:13px;color:rgba(255,255,255,.6);">Logged in as: <strong style="color:var(--gold)" id="adminEmailDisplay">admin</strong></span>
+        <button class="ghostbtn" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+  </div>
+  <div class="alayout">
+    <div class="aside">
+      <div class="anavitem act" onclick="aN('dashboard',this)">📊 Dashboard</div>
+      <div class="anavitem" onclick="aN('orders',this)">📦 Orders</div>
+      <div class="anavitem" onclick="aN('products',this)">👕 Products</div>
+      <div class="anavitem" onclick="aN('schools',this)">🏫 Schools</div>
+      <div class="anavitem" onclick="aN('addprod',this)">➕ Add Product</div>
+      <div class="anavitem" onclick="aN('wholesale',this)">💼 Wholesale</div>
+      <div class="anavitem" onclick="aN('users',this)">👥 Users</div>
+      <div class="anavitem" onclick="aN('settings',this)">🔐 Admin Settings</div>
+    </div>
+    <div class="abody">
+
+      <!-- DASHBOARD -->
+      <div class="asec act" id="as-dashboard">
+        <div class="phd"><h1>Dashboard</h1><p>Overview of your store performance</p></div>
+        <div class="statsgrid">
+          <div class="statcard"><div class="statlbl">Total Orders</div><div class="statval" id="st-orders">6</div><div class="statchange">↑ 12% this month</div></div>
+          <div class="statcard"><div class="statlbl">Revenue</div><div class="statval" id="st-rev">Rs.4.2L</div><div class="statchange">↑ 8% this month</div></div>
+          <div class="statcard"><div class="statlbl">Schools</div><div class="statval">6</div><div class="statchange">Active</div></div>
+          <div class="statcard"><div class="statlbl">Products</div><div class="statval" id="st-prods">10</div><div class="statchange">In catalog</div></div>
+        </div>
+        <div class="dtable">
+          <div class="dthd"><h3>Recent Orders</h3><button class="btn btn-out btn-sm" onclick="aN('orders',null)">View All</button></div>
+          <table><thead><tr><th>Order ID</th><th>Customer</th><th>School</th><th>Amount</th><th>Status</th></tr></thead>
+          <tbody id="dash-orders"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ORDERS -->
+      <div class="asec" id="as-orders">
+        <div class="phd"><h1>All Orders</h1><p id="order-count"></p></div>
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="chip act" onclick="filterOrders('All',this)">All</button>
+          <button class="chip" onclick="filterOrders('Processing',this)">Processing</button>
+          <button class="chip" onclick="filterOrders('Shipped',this)">Shipped</button>
+          <button class="chip" onclick="filterOrders('Delivered',this)">Delivered</button>
+        </div>
+        <div class="dtable">
+          <div class="dthd"><h3>Order Management</h3></div>
+          <table><thead><tr><th>Order ID</th><th>Customer</th><th>School</th><th>Amount</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="orders-body"></tbody></table>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="asec" id="as-products">
+        <div class="phd"><h1>Products</h1><p id="prod-count-lbl"></p></div>
+        <div class="dtable">
+          <div class="dthd"><h3>Product Catalog</h3><button class="btn btn-gold btn-sm" onclick="aN('addprod',null)">+ Add New</button></div>
+          <table><thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Bulk Price</th><th>Sizes</th><th>Stock</th><th>Action</th></tr></thead>
+          <tbody id="prods-body"></tbody></table>
+        </div>
+      </div>
+
+      <!-- SCHOOLS -->
+      <div class="asec" id="as-schools">
+        <div class="phd"><h1>Schools</h1><p>Manage registered schools</p></div>
+        <div class="dtable">
+          <div class="dthd"><h3>Registered Schools</h3><button class="btn btn-gold btn-sm" onclick="addSchoolPrompt()">+ Add School</button></div>
+          <table><thead><tr><th>School Name</th><th>City</th><th>Products</th><th>Status</th></tr></thead>
+          <tbody id="schools-body"></tbody></table>
+        </div>
+      </div>
+
+      <!-- ADD PRODUCT -->
+      <div class="asec" id="as-addprod">
+        <div class="phd"><h1>Add New Product</h1><p>Add a uniform item to the catalog</p></div>
+        <div class="addform">
+          <h3>Product Details</h3>
+          <div class="frow">
+            <div class="fg2"><label>Product Name *</label><input type="text" id="ap-name" placeholder="e.g. School Shirt"></div>
+            <div class="fg2"><label>Category *</label><select id="ap-cat"><option>Shirt</option><option>Pant</option><option>Blazer</option><option>Tie</option><option>Skirt</option></select></div>
+          </div>
+          <div class="frow">
+            <div class="fg2"><label>Price (Rs.) *</label><input type="number" id="ap-price" placeholder="500"></div>
+            <div class="fg2"><label>Bulk Price Rs. (10+ orders)</label><input type="number" id="ap-bulk" placeholder="450"></div>
+          </div>
+          <div class="frow">
+            <div class="fg2"><label>School *</label><select id="ap-school"><option>Delhi Public School</option><option>St. Mary's Convent</option><option>Kendriya Vidyalaya</option><option>Ryan International School</option><option>DAV Public School</option><option>Amity International School</option></select></div>
+            <div class="fg2"><label>Stock Status</label><select id="ap-stock"><option value="in">In Stock</option><option value="low">Low Stock</option></select></div>
+          </div>
+          <div class="frow full">
+            <div class="fg2"><label>Available Sizes (comma separated)</label><input type="text" id="ap-sizes" placeholder="S, M, L, XL"></div>
+          </div>
+          <div class="frow full" style="margin-bottom:6px;">
+            <div class="fg2">
+              <label>Product Image (optional)</label>
+              <div class="img-upload-box" id="imgUploadBox" onclick="document.getElementById('ap-img-file').click()">
+                <div class="img-upload-inner" id="imgUploadInner">
+                  <div style="font-size:36px;margin-bottom:8px;">📷</div>
+                  <div style="font-size:13px;font-weight:600;color:var(--g600)">Click to upload image</div>
+                  <div style="font-size:11px;color:var(--g400);margin-top:4px">JPG, PNG, WEBP — max 5MB</div>
+                </div>
+                <img id="imgPreview" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;" alt="Preview">
+              </div>
+              <input type="file" id="ap-img-file" accept="image/*" style="display:none" onchange="previewImg(this)">
+              <button type="button" id="removeImgBtn" onclick="removeImg()" style="display:none;margin-top:6px;background:var(--red-light);color:var(--red);border:none;border-radius:7px;padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;">✕ Remove Image</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn btn-gold" onclick="addProduct()">Add Product</button>
+            <button class="btn btn-out" onclick="aN('products',null)">View All Products</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHOLESALE -->
+      <div class="asec" id="as-wholesale">
+        <div class="phd"><h1>Wholesale Orders</h1><p>Bulk orders from schools</p></div>
+        <div class="dtable">
+          <div class="dthd"><h3>Bulk / Wholesale Orders</h3></div>
+          <table><thead><tr><th>Order ID</th><th>School</th><th>Items</th><th>Qty</th><th>Discount</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><strong>#WH-4821</strong></td><td>Delhi Public School</td><td>Shirt</td><td>200</td><td>10%</td><td>Rs.90,000</td><td><span class="tag blue">Processing</span></td></tr>
+            <tr><td><strong>#WH-4820</strong></td><td>Ryan International</td><td>Blazer, Tie</td><td>150</td><td>8%</td><td>Rs.2,07,000</td><td><span class="tag green">Confirmed</span></td></tr>
+            <tr><td><strong>#WH-4819</strong></td><td>Kendriya Vidyalaya</td><td>Full Set</td><td>300</td><td>12%</td><td>Rs.8,58,000</td><td><span class="tag yellow">Pending</span></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- USERS -->
+      <div class="asec" id="as-users">
+        <div class="phd"><h1>Users</h1><p id="user-count-lbl">Registered customers</p></div>
+        <div class="dtable">
+          <div class="dthd"><h3>Registered Users</h3></div>
+          <table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Orders</th><th>Status</th></tr></thead>
+          <tbody id="users-body"></tbody></table>
+        </div>
+      </div>
+
+
+      <!-- ADMIN SETTINGS -->
+      <div class="asec" id="as-settings">
+        <div class="phd"><h1>Admin Settings</h1><p>Manage your secret admin credentials</p></div>
+        <div class="addform" style="max-width:500px;margin-bottom:20px;">
+          <h3>✉️ Change Admin Email</h3>
+          <div class="frow full" style="margin-bottom:14px;"><div class="fg2"><label>Current Email</label><input type="email" id="s-cur-email" placeholder="Current admin email"></div></div>
+          <div class="frow full" style="margin-bottom:14px;"><div class="fg2"><label>New Email</label><input type="email" id="s-new-email" placeholder="New admin email"></div></div>
+          <div class="frow full" style="margin-bottom:14px;"><div class="fg2"><label>Confirm with Current Password</label><input type="password" id="s-email-pass" placeholder="Enter current password"></div></div>
+          <div id="emailMsg" style="font-size:12px;margin-bottom:10px;display:none;padding:8px 12px;border-radius:8px;font-weight:600;"></div>
+          <button class="btn btn-navy" onclick="changeAdminEmail()">Update Email</button>
+        </div>
+        <div class="addform" style="max-width:500px;">
+          <h3>🔑 Change Admin Password</h3>
+          <div class="frow full" style="margin-bottom:14px;"><div class="fg2"><label>Current Password</label><input type="password" id="s-cur-pass" placeholder="Enter current password"></div></div>
+          <div class="frow full" style="margin-bottom:14px;"><div class="fg2"><label>New Password (min 6 chars)</label><input type="password" id="s-new-pass" placeholder="Enter new password"></div></div>
+          <div class="frow full" style="margin-bottom:14px;"><div class="fg2"><label>Confirm New Password</label><input type="password" id="s-conf-pass" placeholder="Repeat new password"></div></div>
+          <div id="passMsg" style="font-size:12px;margin-bottom:10px;display:none;padding:8px 12px;border-radius:8px;font-weight:600;"></div>
+          <button class="btn btn-navy" onclick="changeAdminPass()">Update Password</button>
+        </div>
+        <div style="margin-top:20px;padding:14px 18px;background:var(--blue-light);border-radius:10px;font-size:13px;color:var(--blue);max-width:500px;border:1px solid rgba(21,101,192,.15);">
+          ℹ️ <strong>Important:</strong> Credentials are never shown to anyone. Changes take effect immediately. Keep your admin login private and secure.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toastMsg">Done!</span></div>
+
+<script>
+// ═══ STATE ═══
+let ADMIN_EMAIL = 'admin@uniformhub.com';
+let ADMIN_PASS  = 'admin123';
+let users = [];       // registered customers
+let currentUser = null;
+let cart = [], selSizes = {}, selQtys = {}, activeSchool = '', promoApplied = false, currentCat = 'All';
+
+const SCHOOLS_DATA = [
+  {name:'Delhi Public School',     city:'New Delhi', count:14},
+  {name:"St. Mary's Convent",      city:'Mumbai',    count:10},
+  {name:'Kendriya Vidyalaya',      city:'Bengaluru', count:12},
+  {name:'Ryan International School',city:'Chennai',  count:13},
+  {name:'DAV Public School',       city:'Kolkata',   count:9},
+  {name:'Amity International School',city:'Noida',   count:11},
+];
+
+let PRODUCTS = [
+  {id:1, name:'School Shirt',   cat:'Shirt',  emoji:'👔', price:500,  bulk:450,  sizes:['S','M','L','XL'],         stock:'in'},
+  {id:2, name:'School Pant',    cat:'Pant',   emoji:'👖', price:700,  bulk:630,  sizes:['28','30','32','34'],       stock:'in'},
+  {id:3, name:'School Blazer',  cat:'Blazer', emoji:'🧥', price:1500, bulk:1350, sizes:['S','M','L','XL'],         stock:'in'},
+  {id:4, name:'School Tie',     cat:'Tie',    emoji:'🎀', price:200,  bulk:180,  sizes:['One Size'],               stock:'in'},
+  {id:5, name:"Girls' Skirt",   cat:'Skirt',  emoji:'👗', price:550,  bulk:495,  sizes:['S','M','L','XL'],         stock:'in'},
+  {id:6, name:'Sports T-Shirt', cat:'Shirt',  emoji:'👕', price:350,  bulk:315,  sizes:['S','M','L','XL'],         stock:'low'},
+  {id:7, name:'Track Pants',    cat:'Pant',   emoji:'🩳', price:450,  bulk:405,  sizes:['S','M','L','XL'],         stock:'in'},
+  {id:8, name:'Winter Sweater', cat:'Blazer', emoji:'🧶', price:800,  bulk:720,  sizes:['S','M','L','XL'],         stock:'in'},
+  {id:9, name:'House Tie',      cat:'Tie',    emoji:'🔴', price:180,  bulk:160,  sizes:['One Size'],               stock:'in'},
+  {id:10,name:'PE Shorts',      cat:'Skirt',  emoji:'🩲', price:300,  bulk:270,  sizes:['S','M','L','XL'],         stock:'low'},
+];
+
+let ORDERS = [
+  {id:'#UH-291847', customer:'Amit Sharma',  school:'Delhi Public School',    amount:1700, date:'28 May 2026', status:'Delivered'},
+  {id:'#UH-291846', customer:'Priya Nair',   school:"St. Mary's Convent",     amount:1900, date:'27 May 2026', status:'Shipped'},
+  {id:'#UH-291845', customer:'Rajan Mehta',  school:'Kendriya Vidyalaya',     amount:2600, date:'26 May 2026', status:'Processing'},
+  {id:'#UH-291844', customer:'Sunita Rao',   school:'Ryan International',     amount:4400, date:'25 May 2026', status:'Delivered'},
+  {id:'#UH-291843', customer:'Vikram Das',   school:'DAV Public School',      amount:2800, date:'24 May 2026', status:'Shipped'},
+  {id:'#UH-291842', customer:'Meena Iyer',   school:'Amity International',    amount:3200, date:'23 May 2026', status:'Processing'},
+];
+
+const fmtRs = n => 'Rs.' + Number(n).toLocaleString('en-IN');
+const tagClass = s => s==='Delivered'?'green':s==='Shipped'?'blue':s==='Processing'?'yellow':'red';
+
+// ═══ AUTH ═══
+function swTab(tab, el) {
+  document.querySelectorAll('.ltab').forEach(b => b.classList.remove('act'));
+  document.querySelectorAll('.lform').forEach(f => f.classList.remove('act'));
+  el.classList.add('act');
+  document.getElementById('lf-'+tab).classList.add('act');
+  document.getElementById('loginErr').classList.remove('show');
+  document.getElementById('regErr').classList.remove('show');
+}
+
+function doLogin() {
+  const email = document.getElementById('li-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('li-pass').value.trim();
+  const err   = document.getElementById('loginErr');
+  err.classList.remove('show');
+  // Compare both lowercased to avoid case mismatch
+  if (email === ADMIN_EMAIL.toLowerCase() && pass === ADMIN_PASS) {
+    currentUser = {name:'Admin', email:ADMIN_EMAIL, role:'admin'};
+    launchApp(); return;
+  }
+  const u = users.find(x => x.email.toLowerCase() === email && x.pass === pass);
+  if (u) { currentUser = {...u}; launchApp(); return; }
+  err.textContent = 'Invalid email or password. Please try again.';
+  err.classList.add('show');
+}
+
+function guestLogin() {
+  currentUser = {name:'Guest', email:'guest', role:'customer'};
+  launchApp();
+}
+
+function doRegister() {
+  const name  = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass  = document.getElementById('reg-pass').value;
+  const err   = document.getElementById('regErr');
+  if (!name || !email || !pass) { err.textContent='Please fill in all fields.'; err.classList.add('show'); return; }
+  if (pass.length < 6)          { err.textContent='Password must be at least 6 characters.'; err.classList.add('show'); return; }
+  if (email === ADMIN_EMAIL)     { err.textContent='This email is already in use.'; err.classList.add('show'); return; }
+  if (users.find(x => x.email === email)) { err.textContent='This email is already registered.'; err.classList.add('show'); return; }
+  const u = {name, email, pass, role:'customer', joined:'30 May 2026', orders:0};
+  users.push(u);
+  currentUser = {...u};
+  launchApp();
+}
+
+function launchApp() {
+  document.getElementById('loginOverlay').classList.add('hidden');
+  const ini = currentUser.name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('uAvatar').textContent = ini;
+  document.getElementById('uLabel').textContent  = currentUser.name;
+  document.getElementById('tab-admin').style.display = currentUser.role==='admin' ? 'block' : 'none';
+  if (currentUser.role==='admin') {
+    document.getElementById('adminEmailDisplay').textContent = ADMIN_EMAIL;
+  }
+  initSchoolGrid();
+  PRODUCTS.forEach(p => { selSizes[p.id]=p.sizes[0]; selQtys[p.id]=1; });
+  renderProducts(PRODUCTS);
+  toast('Welcome, ' + currentUser.name + '! 👋');
+}
+
+function doLogout() {
+  currentUser = null; cart = []; promoApplied = false;
+  document.getElementById('cartBadge').textContent = '0';
+  document.getElementById('loginOverlay').classList.remove('hidden');
+  document.getElementById('li-email').value = '';
+  document.getElementById('li-pass').value  = '';
+  document.getElementById('loginErr').classList.remove('show');
+  document.getElementById('regErr').classList.remove('show');
+  document.querySelectorAll('.ltab').forEach((b,i)=>b.classList.toggle('act',i===0));
+  document.querySelectorAll('.lform').forEach((f,i)=>f.classList.toggle('act',i===0));
+  nav('home');
+}
+
+// ═══ NAVIGATION ═══
+function nav(p) {
+  if (p==='admin' && currentUser?.role !== 'admin') { toast('Admin access only! Please log in as admin.'); return; }
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('act'));
+  document.querySelectorAll('.tnav').forEach(x=>x.classList.remove('act'));
+  document.getElementById('page-'+p).classList.add('act');
+  const t = document.getElementById('tab-'+p);
+  if (t) t.classList.add('act');
+  if (p==='cart')    renderCart();
+  if (p==='checkout') renderCoSummary();
+  if (p==='admin')   renderAdmin();
+  window.scrollTo(0,0);
+}
+
+// ═══ HOME ═══
+function initSchoolGrid() {
+  document.getElementById('schoolGrid').innerHTML = SCHOOLS_DATA.map(s =>
+    `<div class="sc" onclick="pickSchool('${s.name}')">
+      <div class="sc-ic">🏫</div>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-cnt">${s.count} items</div>
+      <div class="sc-city">📍 ${s.city}</div>
+    </div>`
+  ).join('');
+}
+
+function goShop() {
+  const v = document.getElementById('homeSchool').value;
+  if (!v) { toast('Please select a school first.'); return; }
+  pickSchool(v);
+}
+
+function pickSchool(name) {
+  activeSchool = name;
+  document.getElementById('shopSchoolName').textContent = name;
+  document.getElementById('homeSchool').value = name;
+  PRODUCTS.forEach(p=>{ selSizes[p.id]=p.sizes[0]; selQtys[p.id]=1; });
+  renderProducts(PRODUCTS);
+  nav('shop');
+}
+
+// ═══ PRODUCTS ═══
+function renderProducts(list) {
+  const g = document.getElementById('prodGrid');
+  if (!list.length) { g.innerHTML='<p style="color:var(--g500);padding:32px 0;grid-column:1/-1">No items found for this filter.</p>'; return; }
+  g.innerHTML = list.map(p => `
+    <div class="pc">
+      <div class="pcimg" style="${p.img?'padding:0;':''}">
+        ${p.img ? `<img src="${p.img}" style="width:100%;height:100%;object-fit:cover;" alt="${p.name}">` : p.emoji}
+        <span class="pcbadge ${p.stock}">${p.stock==='in'?'In Stock':'Low Stock'}</span>
+      </div>
+      <div class="pcbody">
+        <div class="pcname">${p.name}</div>
+        <div class="pcschool">${activeSchool||'All Schools'}</div>
+        <div class="pcprice">${fmtRs(p.price)}<span class="pcpu">/ item</span>${p.bulk?`<span class="pcbulk">${fmtRs(p.bulk)} bulk</span>`:''}</div>
+        <div class="sizes" id="sz-${p.id}">
+          ${p.sizes.map((s,i)=>`<button class="sz${i===0?' act':''}" onclick="pickSz(${p.id},'${s}',this)">${s}</button>`).join('')}
+        </div>
+        <div class="qadd">
+          <div class="qctrl">
+            <button class="qbtn" onclick="chgQty(${p.id},-1)">−</button>
+            <input class="qval" id="q-${p.id}" value="1" readonly>
+            <button class="qbtn" onclick="chgQty(${p.id},+1)">+</button>
+          </div>
+          <button class="addbtn" onclick="addToCart(${p.id})">Add to Cart</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function pickSz(pid,size,el) {
+  selSizes[pid]=size;
+  el.closest('.sizes').querySelectorAll('.sz').forEach(b=>b.classList.remove('act'));
+  el.classList.add('act');
+}
+
+function chgQty(pid,d) {
+  const el = document.getElementById('q-'+pid);
+  let v = (parseInt(el.value)||1)+d;
+  if(v<1)v=1; if(v>99)v=99;
+  el.value=v; selQtys[pid]=v;
+}
+
+function addToCart(pid) {
+  const p = PRODUCTS.find(x=>x.id===pid);
+  const size = selSizes[pid]||p.sizes[0];
+  const qty  = selQtys[pid]||1;
+  const key  = pid+'-'+size;
+  const ex   = cart.find(c=>c.key===key);
+  if (ex) ex.qty+=qty;
+  else cart.push({key,pid,name:p.name,size,qty,price:p.price,emoji:p.emoji});
+  updateBadge();
+  toast(`${p.name} (${size}) added to cart! 🛒`);
+}
+
+function filterP(cat,el) {
+  currentCat=cat;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('act'));
+  el.classList.add('act');
+  renderProducts(cat==='All'?PRODUCTS:PRODUCTS.filter(p=>p.cat===cat));
+}
+
+function sortP(v) {
+  let list = currentCat==='All'?[...PRODUCTS]:PRODUCTS.filter(p=>p.cat===currentCat);
+  if(v==='low')  list.sort((a,b)=>a.price-b.price);
+  if(v==='high') list.sort((a,b)=>b.price-a.price);
+  if(v==='name') list.sort((a,b)=>a.name.localeCompare(b.name));
+  renderProducts(list);
+}
+
+function doSearch(val) {
+  if (!val.trim()) return;
+  const q = val.toLowerCase();
+  const list = PRODUCTS.filter(p=>p.name.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q));
+  activeSchool='';
+  document.getElementById('shopSchoolName').textContent = `Search: "${val}"`;
+  renderProducts(list);
+  nav('shop');
+}
+
+// ═══ CART ═══
+function updateBadge() {
+  document.getElementById('cartBadge').textContent = cart.reduce((a,c)=>a+c.qty,0);
+}
+
+function renderCart() {
+  const n = cart.reduce((a,c)=>a+c.qty,0);
+  document.getElementById('cartSub').textContent = n+' item'+(n!==1?'s':'')+' in cart';
+  const el = document.getElementById('cartList');
+  if (!cart.length) {
+    el.innerHTML=`<div class="emptybox"><div class="emptyic">🛒</div><p>Your cart is empty</p><button class="btn btn-navy" onclick="nav('shop')">Start Shopping →</button></div>`;
+  } else {
+    el.innerHTML = cart.map(c=>`
+      <div class="ci">
+        <div class="ciimg">${c.emoji}</div>
+        <div class="ciinfo"><div class="ciname">${c.name}</div><div class="cimeta">Size: ${c.size} · Qty: ${c.qty} · ${fmtRs(c.price)} each</div></div>
+        <div class="ciright">
+          <div class="ciprice">${fmtRs(c.price*c.qty)}</div>
+          <button class="cirem" onclick="removeItem('${c.key}')">Remove</button>
+        </div>
+      </div>`).join('');
+  }
+  calcSummary();
+}
+
+function removeItem(key) { cart=cart.filter(c=>c.key!==key); updateBadge(); renderCart(); }
+function clearCart()     { cart=[]; updateBadge(); renderCart(); }
+
+function calcSummary() {
+  const sub   = cart.reduce((a,c)=>a+(c.price*c.qty),0);
+  const del   = sub>=2000?0:80;
+  const promo = promoApplied?Math.round(sub*0.10):0;
+  const tot   = sub+del-promo;
+  document.getElementById('s-sub').textContent   = fmtRs(sub);
+  document.getElementById('s-del').textContent   = del===0?'FREE ✓':fmtRs(del);
+  document.getElementById('s-promo').textContent = promo>0?'-'+fmtRs(promo):fmtRs(0);
+  document.getElementById('s-total').textContent = fmtRs(tot);
+  const note = document.getElementById('sumNote');
+  if (sub>=2000) { note.textContent='🎉 You qualify for FREE delivery!'; note.style.display='block'; }
+  else if (sub>0){ note.textContent=`Add ${fmtRs(2000-sub)} more for free delivery`; note.style.display='block'; }
+  else           { note.style.display='none'; }
+}
+
+function applyPromo() {
+  const code = document.getElementById('promoInp').value.trim().toUpperCase();
+  const msg  = document.getElementById('promoMsg');
+  if (code==='SCHOOL10') {
+    promoApplied=true;
+    msg.textContent='✓ Promo SCHOOL10 applied! 10% off'; msg.style.color='var(--green)';
+    calcSummary(); toast('10% discount applied! 🎉');
+  } else {
+    msg.textContent='✗ Invalid promo code'; msg.style.color='var(--red)';
+  }
+}
+
+// ═══ CHECKOUT ═══
+function renderCoSummary() {
+  const sub = cart.reduce((a,c)=>a+(c.price*c.qty),0);
+  const del = sub>=2000?0:80;
+  document.getElementById('coItems').innerHTML = cart.length
+    ? cart.map(c=>`<div style="display:flex;justify-content:space-between;margin-bottom:7px;">${c.emoji} ${c.name} (${c.size}) ×${c.qty} <strong>${fmtRs(c.price*c.qty)}</strong></div>`).join('')
+    : '<p style="color:var(--g500)">No items in cart</p>';
+  document.getElementById('co-sub').textContent = fmtRs(sub);
+  document.getElementById('co-del').textContent = del===0?'FREE':fmtRs(del);
+  document.getElementById('co-tot').textContent = fmtRs(sub+del);
+}
+
+function selPay(el) {
+  document.querySelectorAll('.payopt').forEach(p=>p.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+function placeOrder() {
+  const fname = document.getElementById('f-fname').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const addr  = document.getElementById('f-addr').value.trim();
+  const pin   = document.getElementById('f-pin').value.trim();
+  if (!fname)            { toast('⚠ Please enter your name.'); return; }
+  if (!phone)            { toast('⚠ Please enter your phone number.'); return; }
+  if (!addr)             { toast('⚠ Please enter your delivery address.'); return; }
+  if (!pin||pin.length!==6){ toast('⚠ Please enter a valid 6-digit PIN code.'); return; }
+  if (!cart.length)      { toast('⚠ Your cart is empty!'); return; }
+  const amt = cart.reduce((a,c)=>a+(c.price*c.qty),0);
+  const oid = '#UH-'+Math.floor(100000+Math.random()*900000);
+  ORDERS.unshift({id:oid, customer:currentUser?.name||'Guest', school:activeSchool||'N/A', amount:amt, date:'30 May 2026', status:'Processing'});
+  if (currentUser && currentUser.role==='customer') {
+    const u = users.find(x=>x.email===currentUser.email);
+    if (u) u.orders = (u.orders||0)+1;
+  }
+  document.getElementById('successId').textContent = oid;
+  cart=[]; promoApplied=false; updateBadge();
+  nav('success');
+}
+
+// ═══ ADMIN ═══
+let orderFilter = 'All';
+
+function renderAdmin() {
+  renderDashOrders();
+  renderOrdersTable();
+  renderProdsTable();
+  renderSchoolsTable();
+  renderUsersTable();
+  document.getElementById('st-orders').textContent = ORDERS.length;
+  document.getElementById('st-prods').textContent  = PRODUCTS.length;
+  document.getElementById('prod-count-lbl').textContent = PRODUCTS.length+' products in catalog';
+  document.getElementById('user-count-lbl').textContent = users.length+' registered customer'+(users.length!==1?'s':'');
+  document.getElementById('order-count').textContent    = ORDERS.length+' total orders';
+}
+
+function renderDashOrders() {
+  document.getElementById('dash-orders').innerHTML = ORDERS.slice(0,5).map(o=>`
+    <tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.customer}</td>
+      <td>${o.school}</td>
+      <td>${fmtRs(o.amount)}</td>
+      <td><span class="tag ${tagClass(o.status)}">${o.status}</span></td>
+    </tr>`).join('');
+}
+
+function renderOrdersTable() {
+  const list = orderFilter==='All'?ORDERS:ORDERS.filter(o=>o.status===orderFilter);
+  document.getElementById('orders-body').innerHTML = list.map(o=>`
+    <tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.customer}</td>
+      <td>${o.school}</td>
+      <td>${fmtRs(o.amount)}</td>
+      <td>${o.date}</td>
+      <td><span class="tag ${tagClass(o.status)}">${o.status}</span></td>
+      <td>
+        <select onchange="changeStatus('${o.id}',this.value)" style="font-size:11px;padding:3px 6px;border:1px solid var(--g100);border-radius:6px;cursor:pointer;">
+          <option ${o.status==='Processing'?'selected':''}>Processing</option>
+          <option ${o.status==='Shipped'?'selected':''}>Shipped</option>
+          <option ${o.status==='Delivered'?'selected':''}>Delivered</option>
+          <option ${o.status==='Cancelled'?'selected':''}>Cancelled</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function filterOrders(f,el) {
+  orderFilter=f;
+  document.querySelectorAll('#as-orders .chip').forEach(c=>c.classList.remove('act'));
+  el.classList.add('act');
+  renderOrdersTable();
+}
+
+function changeStatus(oid,status) {
+  const o = ORDERS.find(x=>x.id===oid);
+  if (o) { o.status=status; renderOrdersTable(); renderDashOrders(); toast('Order '+oid+' updated to '+status); }
+}
+
+function renderProdsTable() {
+  document.getElementById('prods-body').innerHTML = PRODUCTS.map(p=>`
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${p.img
+            ? `<img src="${p.img}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;border:1px solid var(--g100);" alt="${p.name}">`
+            : `<div style="width:40px;height:40px;border-radius:8px;background:var(--g50);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid var(--g100);">${p.emoji}</div>`
+          }
+          <strong>${p.name}</strong>
+        </div>
+      </td>
+      <td>${p.cat}</td>
+      <td>${fmtRs(p.price)}</td>
+      <td>${p.bulk?fmtRs(p.bulk):'—'}</td>
+      <td style="font-size:11px;">${p.sizes.join(', ')}</td>
+      <td><span class="tag ${p.stock==='in'?'green':'yellow'}">${p.stock==='in'?'In Stock':'Low Stock'}</span></td>
+      <td style="display:flex;gap:6px;">
+        <button class="btn btn-out btn-sm" onclick="toggleStock(${p.id})">Toggle Stock</button>
+        <button class="btn-red" onclick="deleteProduct(${p.id})">Delete</button>
+      </td>
+    </tr>`).join('');
+  document.getElementById('prod-count-lbl').textContent = PRODUCTS.length+' products in catalog';
+  document.getElementById('st-prods').textContent = PRODUCTS.length;
+}
+
+function renderSchoolsTable() {
+  document.getElementById('schools-body').innerHTML = SCHOOLS_DATA.map(s=>`
+    <tr>
+      <td><strong>${s.name}</strong></td>
+      <td>${s.city}</td>
+      <td>${s.count}</td>
+      <td><span class="tag green">Active</span></td>
+    </tr>`).join('');
+}
+
+function renderUsersTable() {
+  const tb = document.getElementById('users-body');
+  if (!users.length) {
+    tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--g500);padding:28px;">No registered customers yet</td></tr>';
+  } else {
+    tb.innerHTML = users.map(u=>`
+      <tr>
+        <td><strong>${u.name}</strong></td>
+        <td>${u.email}</td>
+        <td><span class="tag blue">Customer</span></td>
+        <td>${u.joined||'—'}</td>
+        <td>${u.orders||0}</td>
+        <td><span class="tag green">Active</span></td>
+      </tr>`).join('');
+  }
+  document.getElementById('user-count-lbl').textContent = users.length+' registered customer'+(users.length!==1?'s':'');
+}
+
+function toggleStock(pid) {
+  const p = PRODUCTS.find(x=>x.id===pid);
+  p.stock = p.stock==='in'?'low':'in';
+  renderProdsTable(); toast('Stock updated for '+p.name);
+}
+
+function deleteProduct(pid) {
+  if (!confirm('Delete this product?')) return;
+  PRODUCTS = PRODUCTS.filter(x=>x.id!==pid);
+  renderProdsTable(); toast('Product deleted.');
+}
+
+function previewImg(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  if (file.size > 5*1024*1024) { toast('⚠ Image must be under 5MB.'); input.value=''; return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const prev = document.getElementById('imgPreview');
+    const inner = document.getElementById('imgUploadInner');
+    const rmBtn = document.getElementById('removeImgBtn');
+    prev.src = e.target.result;
+    prev.style.display = 'block';
+    inner.style.display = 'none';
+    rmBtn.style.display = 'inline-block';
+    document.getElementById('imgUploadBox').style.border = '2px solid var(--green)';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImg() {
+  document.getElementById('imgPreview').style.display = 'none';
+  document.getElementById('imgPreview').src = '';
+  document.getElementById('imgUploadInner').style.display = 'block';
+  document.getElementById('removeImgBtn').style.display = 'none';
+  document.getElementById('ap-img-file').value = '';
+  document.getElementById('imgUploadBox').style.border = '2px dashed var(--g200)';
+}
+
+function addProduct() {
+  const name  = document.getElementById('ap-name').value.trim();
+  const price = parseInt(document.getElementById('ap-price').value)||0;
+  if (!name||!price) { toast('⚠ Please enter product name and price.'); return; }
+  const cat   = document.getElementById('ap-cat').value;
+  const bulk  = parseInt(document.getElementById('ap-bulk').value)||null;
+  const stock = document.getElementById('ap-stock').value;
+  const sizes = document.getElementById('ap-sizes').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const emojis= {Shirt:'👕',Pant:'👖',Blazer:'🧥',Tie:'🎀',Skirt:'👗'};
+  const imgSrc = document.getElementById('imgPreview').src || '';
+  const hasImg = imgSrc && imgSrc.startsWith('data:');
+  PRODUCTS.push({id:Date.now(),name,cat,emoji:emojis[cat]||'📦',price,bulk,sizes:sizes.length?sizes:['S','M','L','XL'],stock,img:hasImg?imgSrc:null});
+  ['ap-name','ap-price','ap-bulk','ap-sizes'].forEach(id=>document.getElementById(id).value='');
+  removeImg();
+  toast('Product "'+name+'" added to catalog! ✅');
+  aN('products',null);
+  renderProdsTable();
+}
+
+function addSchoolPrompt() {
+  const name = prompt('Enter school name:');
+  const city = prompt('Enter city:');
+  if (name && city) {
+    SCHOOLS_DATA.push({name,city,count:0});
+    // Add to all school selects
+    ['homeSchool','ap-school'].forEach(id=>{
+      const s=document.getElementById(id);
+      if(s){const o=document.createElement('option');o.textContent=name;s.appendChild(o);}
+    });
+    renderSchoolsTable();
+    initSchoolGrid();
+    toast('School "'+name+'" added! 🏫');
+  }
+}
+
+function aN(section, el) {
+  document.querySelectorAll('.asec').forEach(s=>s.classList.remove('act'));
+  document.querySelectorAll('.anavitem').forEach(i=>i.classList.remove('act'));
+  document.getElementById('as-'+section).classList.add('act');
+  if (el) el.classList.add('act');
+  else document.querySelectorAll('.anavitem').forEach(item=>{
+    if(item.getAttribute('onclick')&&item.getAttribute('onclick').includes("'"+section+"'"))item.classList.add('act');
+  });
+}
+
+// ═══ TOAST ═══
+function toast(msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+
+// ═══ ADMIN CREDENTIAL CHANGES ═══
+function showMsg(id, msg, isOk) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+  el.style.background = isOk ? 'var(--green-light)' : 'var(--red-light)';
+  el.style.color = isOk ? 'var(--green)' : 'var(--red)';
+}
+
+function changeAdminEmail() {
+  const curEmail = document.getElementById('s-cur-email').value.trim().toLowerCase();
+  const newEmail = document.getElementById('s-new-email').value.trim().toLowerCase();
+  const pass     = document.getElementById('s-email-pass').value;
+  if (!curEmail || !newEmail || !pass) { showMsg('emailMsg','Please fill in all fields.',false); return; }
+  if (curEmail !== ADMIN_EMAIL)        { showMsg('emailMsg','Current email does not match.',false); return; }
+  if (pass !== ADMIN_PASS)             { showMsg('emailMsg','Incorrect password.',false); return; }
+  if (!newEmail.includes('@'))         { showMsg('emailMsg','Please enter a valid email address.',false); return; }
+  ADMIN_EMAIL = newEmail;
+  if (currentUser) currentUser.email = newEmail;
+  const disp = document.getElementById('adminEmailDisplay');
+  if (disp) disp.textContent = newEmail;
+  document.getElementById('s-cur-email').value = '';
+  document.getElementById('s-new-email').value = '';
+  document.getElementById('s-email-pass').value = '';
+  showMsg('emailMsg','Email updated successfully! New email: ' + newEmail, true);
+  toast('Admin email updated! ✅');
+}
+
+function changeAdminPass() {
+  const curPass  = document.getElementById('s-cur-pass').value;
+  const newPass  = document.getElementById('s-new-pass').value;
+  const confPass = document.getElementById('s-conf-pass').value;
+  if (!curPass || !newPass || !confPass) { showMsg('passMsg','Please fill in all fields.',false); return; }
+  if (curPass !== ADMIN_PASS)            { showMsg('passMsg','Current password is incorrect.',false); return; }
+  if (newPass.length < 6)               { showMsg('passMsg','New password must be at least 6 characters.',false); return; }
+  if (newPass !== confPass)             { showMsg('passMsg','New passwords do not match.',false); return; }
+  ADMIN_PASS = newPass;
+  document.getElementById('s-cur-pass').value = '';
+  document.getElementById('s-new-pass').value = '';
+  document.getElementById('s-conf-pass').value = '';
+  showMsg('passMsg','Password updated successfully!', true);
+  toast('Admin password updated! 🔑');
+}
+
+</script>
+</body>
+</html>
